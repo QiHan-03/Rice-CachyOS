@@ -24,7 +24,7 @@ case "$1" in
         exit
         ;;
     pause)
-        echo " Ⅱ "
+        echo "⏸️"
         exit
         ;;
     next)

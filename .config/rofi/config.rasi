@@ -1,12 +1,7 @@
-@import "colors.rasi"
+
 configuration {
-    terminal: "kitty";
     modes: "combi";
     combi-modes: "window,run,drun";
-
-    me-select-entry: "";
-    me-accept-entry: "MousePrimary";
-
     drun-display-format: "{name}";
     window-format: "{t:45}  ·  {c}";
     font: "Iosevka 13";
@@ -29,7 +24,19 @@ configuration {
     display-ssh: "";
 }
 
-* {    
+* {
+    bg: #0000009e;
+    bg-alt: #00000024;
+    bg-hover: #242832FF;
+    bg-selected: #FFFFFF10;
+    fg: rgba(230, 234, 242, 0.8);
+    fg-muted: #8B93A7FF;
+    fg-dark: rgb(255, 255, 255);
+    accent: #7AA2F7FF;
+    accent-soft: #7AA2F733;
+    urgent: #F7768EFF;
+    border-color: #FFFFFF00;
+
     background-color: transparent;
     text-color: @fg;
     margin: 0;
@@ -42,9 +49,9 @@ window {
     width: 420px;
     height: 420px;
     background-color: @bg;
-    border: 1px;
+    border: 2px;
     border-color: @border-color;
-    border-radius: 10px;
+    border-radius: 18px;
     padding: 10;
 }
 
@@ -57,8 +64,8 @@ mainbox {
 inputbar {
     background-color: @bg-alt;
     border: 1px;
-    border-color: transparent;
-    border-radius: 10px;
+    border-color: @border-color;
+    border-radius: 12px;
     padding: 5px 15px;
     spacing: 12px;
     children: [prompt, entry];
@@ -67,16 +74,16 @@ inputbar {
 prompt {
     enabled: true;
     background-color: transparent;
-    text-color: @border-color;
-    font: "Iosevka Nerd Font 12";
+    text-color: @accent;
+    font: "Iosevka Nerd Font 16";
     padding: 0;
     vertical-align: 0.5;
 }
 
 entry {
     background-color: transparent;
-    text-color: @border-color;
-    font: "Iosevka 12";
+    text-color: @fg;
+    font: "Iosevka 14";
     placeholder: "";
     placeholder-color: @fg-muted;
     padding: 0;
@@ -125,7 +132,7 @@ element alternate.normal {
 element normal.active,
 element alternate.active {
     background-color: transparent;
-    text-color: @border-color;
+    text-color: @accent;
 }
 
 element normal.urgent,
@@ -137,9 +144,7 @@ element alternate.urgent {
 element selected.normal,
 element selected.active {
     background-color: @bg-selected;
-    border: 1px;
-    border-color: @border-color;
-    text-color: @border-color;
+    text-color: @fg-dark;
 }
 
 element selected.urgent {

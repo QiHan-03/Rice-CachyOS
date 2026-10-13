@@ -3,24 +3,10 @@
 
 ---- MY PROGRAMS ----
 
-mainMod    = "SUPER"
 terminal   = "kitty"
 menu       = "rofi -show drun"
-fileManager = "thunar"
+fileManager = "dolphin"
 browser    = "brave"
-
----- AUTOSTART ----
-
-hl.on("hyprland.start", function()
-    -- hl.exec_cmd("dunst") replaced with quickshell notifications
-    hl.exec_cmd("nm-applet")
-    hl.exec_cmd("wl-paste --type text --watch cliphist store")
-    hl.exec_cmd("wl-paste --type image --watch cliphist store")
-    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
-
-    hl.exec_cmd("awww-daemon")
-    hl.exec_cmd("sleep 2 && qs")
-end)
 
 ---- ENVIRONMENT VARIABLES ----
 
@@ -33,11 +19,13 @@ hl.env("MOZ_ENABLE_WAYLAND", "1")
 hl.config({
     input = {
         kb_layout = "us",
-        follow_mouse = 1,
-        sensitivity = 0.5,
+        follow_mouse = 0,
+        sensitivity = 0.3,
+        accel_profile = "flat",
         touchpad = {
-            natural_scroll = false,
+            natural_scroll = true,
             tap_to_click = true,
+            scroll_factor = 0.15
         },
     },
 })
@@ -58,12 +46,20 @@ hl.config({
     },
 })
 
+hl.config({
+    xwayland = {
+        force_zero_scaling = true, 
+        use_nearest_neighbor = true, 
+    },
+})
+
 ---- SPLIT-OUT FILES ----
 
 require("monitors")
 require("keybinds")
 require("look")
 require("rules")
+require("autostart")
 
 -- HyprMod managed settings
 require("hyprland-gui")

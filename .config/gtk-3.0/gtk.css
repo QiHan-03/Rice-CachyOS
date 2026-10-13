@@ -1,4 +1,3 @@
-@import "colors.css";
 window,
 .background,
 headerbar,
@@ -15,10 +14,11 @@ textview text,
 treeview,
 treeview.view,
 treeview.view text {
-    background-color: @gtk_bg;
+    background-color: #000000;
     background-image: none;
 }
 
 * {
-    color: @gtk_fg;
+    color: #ffffff;
 }
+@import 'colors.css';

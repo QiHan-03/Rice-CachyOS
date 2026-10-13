@@ -5,7 +5,7 @@ hl.config({
     general = {
         gaps_in = 4,
         gaps_out = {
-            top = 5,
+            top = 3,
             right = 8,
             bottom = 8,
             left = 8,
@@ -41,4 +41,3 @@ hl.animation({ leaf = "windowsOut", enabled = true, speed = 5, bezier = "easeOut
 hl.animation({ leaf = "border",     enabled = true, speed = 5, bezier = "default" })
 hl.animation({ leaf = "fade",       enabled = true, speed = 4, bezier = "default" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 7, bezier = "default", style = "slidefade" })
-

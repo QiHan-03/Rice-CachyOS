@@ -4,3 +4,9 @@
 .config/kitty/matugen.conf
 .config/rofi/colors.rasi
 .config/quickshell/state/
+
+# Local backups
+*.backup-*
+
+# Temporary files
+.config/hypr/Hyprland 0.56.2

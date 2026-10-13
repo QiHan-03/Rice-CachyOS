@@ -11,10 +11,10 @@ Item {
     readonly property bool powered: adapter ? adapter.enabled : false
     readonly property bool scanning: adapter ? adapter.discovering : false
     property string statusText: ""
-    property real marginLeft: 0
-    property real marginRight: 55
-    property real marginTop: 0
-    property real marginBottom: 0
+    property int contentMargin: 0
+    property int contentRightMargin: 48
+    property int contentTopMargin: 0
+    property int contentBottomMargin: 0
 
     // key -> timestamp (ms) the device was hidden after "unpair".
     // Entries are pruned automatically (see pruneRemovingDevices) so a
@@ -222,16 +222,33 @@ Item {
 
     Column {
         anchors.fill: parent
-        anchors.leftMargin: page.marginLeft; anchors.rightMargin: page.marginRight
-        anchors.topMargin: page.marginTop; anchors.bottomMargin: page.marginBottom
-        spacing: 14
+        anchors.leftMargin: page.contentMargin
+        anchors.rightMargin: page.contentRightMargin
+        anchors.topMargin: page.contentTopMargin
+        anchors.bottomMargin: page.contentBottomMargin
+        spacing: 9
 
-        Text {
-            text: "BLUETOOTH"; color: Theme.text
-            font.family: Theme.fontFamily; font.pixelSize: 19; font.letterSpacing: 3
+        Item {
+            id: header
+            width: parent.width
+            height: 36
+
+            Text {
+                text: "BLUETOOTH"
+                color: Theme.text
+                font.family: Theme.fontFamily
+                font.pixelSize: 18
+                font.letterSpacing: 3
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: -6
+            }
         }
 
-        Rectangle { width: parent.width; height: 1; color: Theme.border }
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: Theme.border
+        }
 
         Rectangle {
             id: bluetoothToggle
@@ -240,14 +257,14 @@ Item {
             radius: Theme.radius
             color: page.powered
                 ? Theme.alpha(Theme.accent, 0.1)
-                : Theme.alpha(Theme.textFaint, 0.15)
+                : Theme.alpha("#A0A0A0", 0.15)
             border.width: 1
-            border.color: page.powered ? Theme.accent : Theme.textFaint
+            border.color: page.powered ? Theme.accent : "#A0A0A0"
 
             Text {
                 anchors.centerIn: parent
                 text: page.powered ? "BLUETOOTH ON" : "BLUETOOTH OFF"
-                color: page.powered ? Theme.accent : Theme.textFaint
+                color: page.powered ? Theme.accent : "#A0A0A0"
                 font.family: Theme.fontFamily
                 font.pixelSize: 10
                 font.bold: true
@@ -274,7 +291,7 @@ Item {
         Flickable {
             id: flick
             width: parent.width
-            height: parent.height - y
+            height: parent.height - header.height - 1 - bluetoothToggle.height - 3 * 9
             clip: true
             contentWidth: width
             contentHeight: list.height
@@ -366,6 +383,9 @@ Item {
 
                 Repeater {
                     id: repeater
+                    // Only bind to the device list while the adapter is powered on;
+                    // otherwise the model is null so no device cards render,
+                    // even for devices that remain paired/known while BT is off.
                     model: (page.adapter && page.powered) ? page.adapter.devices : null
 
                     delegate: Rectangle {
@@ -386,7 +406,7 @@ Item {
 
                         color: isConnected
                             ? Theme.alpha(Theme.accent, 0.10)
-                            : "transparent"
+                            : Theme.alpha(Theme.text, 0.025)
 
                         border.width: 1
                         border.color: isConnected

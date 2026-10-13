@@ -5,17 +5,13 @@ import "../"
 Item {
     id: page
 
-    // ── State ────────────────────────────────────────────────────
     property bool wifiEnabled: true
     property var networks: []
     property string pendingSsid: ""
 
-    // Ethernet status (device, connection state, active connection name)
-    property var ethernet: ({
-        device: "",
-        state: "disconnected",
-        connection: ""
-    })
+    // Ethernet status
+    property bool ethConnected: false
+    property string ethDevice: ""
 
     // Fonts
     property string monoFont: "JetBrains Mono"
@@ -27,10 +23,10 @@ Item {
     property real lastTx: -1
     property real lastTs: 0
 
-    property real marginLeft: 0
-    property real marginRight: 55
-    property real marginTop: 0
-    property real marginBottom: 0
+    property int contentMargin: 0
+    property int contentRightMargin: 48
+    property int contentTopMargin: 0
+    property int contentBottomMargin: 0
 
     // Nerd Font glyphs
     readonly property string icDown: "\uf019"
@@ -46,7 +42,7 @@ Item {
         return (bps / 1024 / 1024 / 1024).toFixed(2) + " GB/s"
     }
 
-    // ── Network speed (all real interfaces, wifi + ethernet) ───────
+    // ── Network speed ────────────────────────────────────────────
     Process {
         id: pNet
         command: ["cat", "/proc/net/dev"]
@@ -100,40 +96,39 @@ Item {
         onTriggered: if (!pNet.running) pNet.running = true
     }
 
-    // ── Ethernet status (device / state / connection name) ─────────
+    // ── Ethernet status ──────────────────────────────────────────
     Process {
-        id: pEthernet
-        command: ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device"]
+        id: pEth
+        command: ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device", "status"]
 
         stdout: StdioCollector {
             onStreamFinished: {
-                var result = { device: "", state: "disconnected", connection: "" }
-                var raw = text.trim()
+                var lines = text.trim().split("\n")
+                var found = false
+                var devName = ""
 
-                if (raw) {
-                    var lines = raw.split("\n")
+                for (var i = 0; i < lines.length; ++i) {
+                    var line = lines[i].trim()
+                    if (!line) continue
 
-                    for (var i = 0; i < lines.length; ++i) {
-                        var line = lines[i].trim()
-                        if (!line) continue
+                    var parts = line.split(":")
+                    if (parts.length < 3) continue
 
-                        var fields = line.split(":")
-                        if (fields.length < 4) continue
+                    var dev = parts[0]
+                    var type = parts[1]
+                    var state = parts[2]
 
-                        if (fields[1] === "ethernet") {
-                            result.device = fields[0]
-                            result.state = fields[2]
-                            result.connection = fields.slice(3).join(":")
-                            break
-                        }
+                    if (type === "ethernet" && state === "connected") {
+                        found = true
+                        devName = dev
+                        break
                     }
                 }
 
-                page.ethernet = result
+                page.ethConnected = found
+                page.ethDevice = devName
             }
         }
-
-        stderr: StdioCollector {}
     }
 
     Timer {
@@ -141,8 +136,10 @@ Item {
         running: true
         repeat: true
         triggeredOnStart: true
-        onTriggered: if (!pEthernet.running) pEthernet.running = true
+        onTriggered: if (!pEth.running) pEth.running = true
     }
+
+    // ── Wi-Fi radio ──────────────────────────────────────────────
     Process {
         id: pRadioGet
         command: ["nmcli", "radio", "wifi"]
@@ -152,8 +149,10 @@ Item {
             onStreamFinished: page.wifiEnabled = text.trim() === "enabled"
         }
     }
+
     Process {
         id: pRadioSet
+
         stdout: StdioCollector {
             onStreamFinished: {
                 pRadioGet.running = true
@@ -167,6 +166,8 @@ Item {
         pRadioSet.command = ["nmcli", "radio", "wifi", on ? "on" : "off"]
         pRadioSet.running = true
     }
+
+    // ── Network list ─────────────────────────────────────────────
     Process {
         id: pList
         command: ["nmcli", "-t", "-f", "IN-USE,SSID,SIGNAL,SECURITY", "device", "wifi", "list"]
@@ -174,48 +175,44 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 var out = []
-                var raw = text.trim()
+                var lines = text.trim().split("\n")
 
-                if (raw) {
-                    var lines = raw.split("\n")
+                for (var i = 0; i < lines.length; ++i) {
+                    var line = lines[i].trim()
+                    if (!line) continue
 
-                    for (var i = 0; i < lines.length; ++i) {
-                        var line = lines[i].trim()
-                        if (!line) continue
+                    var fields = []
+                    var current = ""
+                    var escaped = false
 
-                        var fields = []
-                        var current = ""
-                        var escaped = false
+                    for (var j = 0; j < line.length; ++j) {
+                        var ch = line[j]
 
-                        for (var j = 0; j < line.length; ++j) {
-                            var ch = line[j]
-
-                            if (escaped) {
-                                current += ch
-                                escaped = false
-                            } else if (ch === "\\") {
-                                escaped = true
-                            } else if (ch === ":" && fields.length < 3) {
-                                fields.push(current)
-                                current = ""
-                            } else {
-                                current += ch
-                            }
+                        if (escaped) {
+                            current += ch
+                            escaped = false
+                        } else if (ch === "\\") {
+                            escaped = true
+                        } else if (ch === ":" && fields.length < 3) {
+                            fields.push(current)
+                            current = ""
+                        } else {
+                            current += ch
                         }
-
-                        fields.push(current)
-                        if (fields.length < 4 || !fields[1]) continue
-
-                        var signal = parseInt(fields[2])
-                        if (isNaN(signal)) signal = 0
-
-                        out.push({
-                            ssid: fields[1],
-                            signal: signal,
-                            secured: fields[3] !== "" && fields[3] !== "--",
-                            connected: fields[0] === "*"
-                        })
                     }
+
+                    fields.push(current)
+                    if (fields.length < 4 || !fields[1]) continue
+
+                    var signal = parseInt(fields[2])
+                    if (isNaN(signal)) signal = 0
+
+                    out.push({
+                        ssid: fields[1],
+                        signal: signal,
+                        secured: fields[3] !== "" && fields[3] !== "--",
+                        connected: fields[0] === "*"
+                    })
                 }
 
                 page.networks = out
@@ -227,11 +224,12 @@ Item {
 
     Process {
         id: pConnect
+
         function refresh() {
             page.pendingSsid = ""
-            pEthernet.running = true
-            if (page.wifiEnabled) pList.running = true
+            pList.running = true
         }
+
         stdout: StdioCollector { onStreamFinished: pConnect.refresh() }
         stderr: StdioCollector { onStreamFinished: pConnect.refresh() }
     }
@@ -254,19 +252,83 @@ Item {
     Component.onCompleted: {
         pRadioGet.running = true
         pList.running = true
-        pEthernet.running = true
+        pEth.running = true
     }
 
     Column {
         anchors.fill: parent
-        anchors.leftMargin: page.marginLeft; anchors.rightMargin: page.marginRight
-        anchors.topMargin: page.marginTop; anchors.bottomMargin: page.marginBottom
-        spacing: 14
-        Text {
-            text: "NETWORK"; color: Theme.text
-            font.family: page.monoFont; font.pixelSize: 19; font.letterSpacing: 3
+        anchors.leftMargin: page.contentMargin
+        anchors.rightMargin: page.contentRightMargin
+        anchors.topMargin: page.contentTopMargin
+        anchors.bottomMargin: page.contentBottomMargin
+        spacing: 9
+
+        // ── Header ───────────────────────────────────────────────
+        Item {
+            id: header
+            width: parent.width
+            height: 36
+
+            Row {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: -6
+                spacing: 10
+
+                Text {
+                    id: networkTitle
+                    text: "NETWORK"
+                    color: Theme.text
+                    font.family: page.monoFont
+                    font.pixelSize: 19
+                    font.letterSpacing: 3
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
         }
-        Rectangle { width: parent.width; height: 1; color: Theme.border }
+
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: Theme.border
+        }
+
+        // ── Ethernet status (only when connected) ──────────────────
+        Rectangle {
+            id: ethStatus
+            visible: page.ethConnected
+            width: parent.width
+            height: visible ? 24 : 0
+            radius: Theme.radius
+            color: Theme.alpha(Theme.accent2, 0.08)
+            border.width: 1
+            border.color: Theme.accent2
+
+            Row {
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 8
+
+                Text {
+                    text: page.icEth
+                    color: Theme.accent2
+                    font.family: Theme.iconFont
+                    font.pixelSize: 11
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Text {
+                    text: "ETHERNET" + (page.ethDevice ? " · " + page.ethDevice : "")
+                    color: Theme.accent2
+                    font.family: page.monoFont
+                    font.pixelSize: 10
+                    font.letterSpacing: 1
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+        }
+
         Column {
             id: statsRow
             width: parent.width
@@ -279,14 +341,14 @@ Item {
                 radius: Theme.radius
                 color: page.wifiEnabled
                     ? Theme.alpha(Theme.accent, 0.1)
-                    : Theme.alpha(Theme.textFaint, 0.15)
+                    : Theme.alpha("#A0A0A0", 0.15)
                 border.width: 1
-                border.color: page.wifiEnabled ? Theme.accent : Theme.textFaint
+                border.color: page.wifiEnabled ? Theme.accent : "#A0A0A0"
 
                 Text {
                     anchors.centerIn: parent
                     text: page.wifiEnabled ? "WI-FI ON" : "WI-FI OFF"
-                    color: page.wifiEnabled ? Theme.accent : Theme.textFaint
+                    color: page.wifiEnabled ? Theme.accent : "#A0A0A0"
                     font.family: page.monoFont
                     font.pixelSize: 10
                     font.bold: true
@@ -357,70 +419,10 @@ Item {
             }
         }
 
-        // ── Ethernet status card (always shown) ─────────────────
-        Rectangle {
-            id: ethCard
-            width: parent.width
-            height: 46
-            radius: Theme.radius
-            color: page.ethernet.state === "connected"
-                ? Theme.alpha(Theme.accent2, 0.10)
-                : "#00000000"
-            border.width: 1
-            border.color: page.ethernet.state === "connected" ? Theme.accent2 : Theme.border
-
-            Row {
-                anchors.left: parent.left
-                anchors.leftMargin: 14
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 9
-
-                Text {
-                    text: page.icEth
-                    color: page.ethernet.state === "connected" ? Theme.accent2 : Theme.textDim
-                    font.family: Theme.iconFont
-                    font.pixelSize: 15
-                }
-
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
-
-                    Text {
-                        text: "Ethernet"
-                        color: Theme.text
-                        font.family: page.monoFont
-                        font.pixelSize: 12
-                    }
-
-                    Text {
-                        text: page.ethernet.state === "connected"
-                            ? (page.ethernet.connection || page.ethernet.device)
-                            : "Disconnected"
-                        color: Theme.textDim
-                        font.family: page.monoFont
-                        font.pixelSize: 10
-                    }
-                }
-            }
-
-            Text {
-                anchors.right: parent.right
-                anchors.rightMargin: 14
-                anchors.verticalCenter: parent.verticalCenter
-                text: page.ethernet.state === "connected" ? "CONNECTED" : "DISCONNECTED"
-                color: page.ethernet.state === "connected" ? Theme.accent2 : Theme.textDim
-                font.family: page.monoFont
-                font.pixelSize: 10
-                font.letterSpacing: 1
-            }
-        }
-
-        // ── Wi-Fi network list ───────────────────────────────────
+        // ── Network list ─────────────────────────────────────────
         Item {
-            id: listContainer
             width: parent.width
-            height: parent.height - y
+            height: parent.height - header.height - (ethStatus.visible ? ethStatus.height + 9 : 0) - statsRow.height - 1 - 3 * 9
 
             Flickable {
                 anchors.fill: parent

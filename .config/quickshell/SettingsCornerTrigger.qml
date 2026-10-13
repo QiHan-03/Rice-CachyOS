@@ -3,144 +3,81 @@ import Quickshell.Wayland
 import QtQuick
 
 Item {
-id: root
-property bool hyprlockEnabled: true
-property bool settingsEnabled: true
-property bool rofiEnabled: false
-property bool wallpaperEnabled: false
-property bool wlogoutEnabled: true
 
-property int triggerHeight: 10
-property color triggerColor: '#0037ff00'
-property real hyprlockFrom: 0.0
-property real hyprlockTo: 0.01
+    property int settingsWidth: 800
+    property int settingsHeight: 10
+    property int settingsLeft: 150
+    property int settingsTop: 0
+    property int wallpaperWidth: 800
+    property int wallpaperHeight: 10
+    property int wallpaperRight: 150
+    property int wallpaperTop: 0
 
-property real settingsFrom: 0.25
-property real settingsTo: 0.40
+    PanelWindow {
+        id: settingsTrigger
 
-property real rofiFrom: 0.45
-property real rofiTo: 0.55
+        anchors {
+            top: true
+            left: true
+        }
 
-property real wallpaperFrom: 0.60
-property real wallpaperTo: 0.75
+        implicitWidth: settingsWidth
+        implicitHeight: settingsHeight
 
-property real wlogoutFrom: 0.99
-property real wlogoutTo: 1.0
+        margins {
+            left: settingsLeft
+            top: settingsTop
+        }
 
-PanelWindow {
-    id: hyprlockTrigger
-    visible: root.hyprlockEnabled
-    anchors { top: true; left: true }
-    implicitHeight: root.triggerHeight
-    implicitWidth: screen ? Math.round(screen.width * (root.hyprlockTo - root.hyprlockFrom)) : 0
-    margins {
-        left: screen ? Math.round(screen.width * root.hyprlockFrom) : 0
-        top: 0
+        color: "transparent"
+
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.layer: WlrLayer.Overlay
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+
+            onEntered: {
+                Quickshell.execDetached([
+                    "qs",
+                    "ipc",
+                    "call",
+                    "settings",
+                    "toggle"
+                ])
+            }
+        }
     }
-    color: root.triggerColor
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
 
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: Quickshell.execDetached([
-            "hyprlock"
-        ])
+    PanelWindow {
+        id: wallpaperTrigger
+
+        anchors {
+            top: true
+            right: true
+        }
+
+        implicitWidth: wallpaperWidth
+        implicitHeight: wallpaperHeight
+        margins {
+            right: wallpaperRight
+            top: wallpaperTop
+        }
+        color: "transparent"
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.layer: WlrLayer.Overlay
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+
+            onEntered: {
+                Quickshell.execDetached([
+                    "sh",
+                    "-c",
+                    "qs -n -p ~/.config/quickshell/hyprquickpaper"
+                ])
+            }
+        }
     }
-}
-
-PanelWindow {
-    id: settingsTrigger
-    visible: root.settingsEnabled
-    anchors { top: true; left: true }
-    implicitHeight: root.triggerHeight
-    implicitWidth: screen ? Math.round(screen.width * (root.settingsTo - root.settingsFrom)) : 0
-    margins {
-        left: screen ? Math.round(screen.width * root.settingsFrom) : 0
-        top: 0
-    }
-    color: root.triggerColor
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: Quickshell.execDetached([
-            "qs", "ipc", "call", "settings", "toggle"
-        ])
-    }
-}
-
-PanelWindow {
-    id: rofiTrigger
-    visible: root.rofiEnabled
-    anchors { top: true; left: true }
-    implicitHeight: root.triggerHeight
-    implicitWidth: screen ? Math.round(screen.width * (root.rofiTo - root.rofiFrom)) : 0
-    margins {
-        left: screen ? Math.round(screen.width * root.rofiFrom) : 0
-        top: 0
-    }
-    color: root.triggerColor
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: Quickshell.execDetached([
-            "rofi", "-show", "drun"
-        ])
-    }
-}
-
-PanelWindow {
-    id: wallpaperTrigger
-    visible: root.wallpaperEnabled
-    anchors { top: true; left: true }
-    implicitHeight: root.triggerHeight
-    implicitWidth: screen ? Math.round(screen.width * (root.wallpaperTo - root.wallpaperFrom)) : 0
-    margins {
-        left: screen ? Math.round(screen.width * root.wallpaperFrom) : 0
-        top: 0
-    }
-    color: root.triggerColor
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: Quickshell.execDetached([
-            "sh", "-c", "qs -n -p ~/.config/quickshell/hyprquickpaper"
-        ])
-    }
-}
-
-PanelWindow {
-    id: wlogoutTrigger
-    visible: root.wlogoutEnabled
-    anchors { top: true; left: true }
-    implicitHeight: root.triggerHeight
-    implicitWidth: screen ? Math.round(screen.width * (root.wlogoutTo - root.wlogoutFrom)) : 0
-    margins {
-        left: screen ? Math.round(screen.width * root.wlogoutFrom) : 0
-        top: 0
-    }
-    color: root.triggerColor
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: Quickshell.execDetached([
-            "qs", "ipc", "call", "powermenu", "toggle"
-        ])
-    }
-}
-
-
 }

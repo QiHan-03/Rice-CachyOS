@@ -1,0 +1,44 @@
+---- AUTOSTART ----
+
+hl.on("hyprland.start", function()
+
+    -- Allow older apps to display tray icons
+    hl.exec_cmd("xembedsniproxy")
+
+    -- Essentials
+    hl.exec_cmd("waybar")
+    hl.exec_cmd("dunst")
+    hl.exec_cmd("nm-applet")
+    hl.exec_cmd("wl-paste --type text --watch cliphist store")
+    hl.exec_cmd("wl-paste --type image --watch cliphist store")
+    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+
+    hl.exec_cmd("sleep 3 && easyeffects --gapplication-service")
+
+    -- Daemons
+    hl.exec_cmd("awww-daemon")
+    hl.exec_cmd("sleep 3 && qs")
+    
+    -- Regular apps
+    hl.exec_cmd("brave")
+    hl.exec_cmd("discord --ozone-platform=x11")
+    hl.exec_cmd("steam -silent")
+    
+    -- Hypyidle
+    hl.exec_cmd("hypridle")
+
+    -- System Tray Apps
+    hl.exec_cmd("sleep 3 && cachy-update --tray")
+end)
+
+---- WINDOW RULES ----
+
+hl.window_rule({
+    match = { class = "brave" },
+    workspace = "1 silent",
+})
+
+hl.window_rule({
+    match = { class = "discord" },
+    workspace = "2 silent",
+})

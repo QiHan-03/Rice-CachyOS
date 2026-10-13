@@ -25,20 +25,6 @@ PanelWindow {
     property string wallpaperPath: configs.wallpaper_path.replace("$HOME", Quickshell.env("HOME"))
     property string cachePath: configs.cache_path.replace("$HOME", Quickshell.env("HOME"))
 
-    property bool showEmpty: false
-    readonly property bool looksEmpty: wallpaperPath !== ""
-                                       && folderModel.status === FolderListModel.Ready
-                                       && folderModel.count === 0
-
-    onLooksEmptyChanged: {
-        if (looksEmpty) {
-            emptyDelay.restart()
-        } else {
-            emptyDelay.stop()
-            showEmpty = false
-        }
-    }
-
     implicitHeight: Screen.height
     implicitWidth: Screen.width
     color: "transparent"
@@ -77,46 +63,6 @@ PanelWindow {
         anchors.fill: parent
         z: 0
         onClicked: Qt.quit()
-    }
-
-    Timer {
-        id: emptyDelay
-        interval: 300
-        onTriggered: main.showEmpty = main.looksEmpty
-    }
-
-    Column {
-        id: emptyState
-        anchors.centerIn: parent
-        spacing: 10
-        z: 2
-        visible: main.showEmpty
-
-        Text {
-            text: "No wallpapers found"
-            color: "#ffffff"
-            font.pixelSize: 22
-            font.bold: true
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Text {
-            text: "Add images to:"
-            color: "#aaaaaa"
-            font.pixelSize: 13
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        TextEdit {
-            id: pathText
-            text: main.wallpaperPath
-            color: "#dddddd"
-            font.pixelSize: 14
-            readOnly: true
-            selectByMouse: true
-            anchors.horizontalCenter: parent.horizontalCenter
-            horizontalAlignment: Text.AlignHCenter
-        }
     }
 
     ListView {
@@ -238,7 +184,7 @@ PanelWindow {
                 Image {
                     id: img
                     anchors.fill: parent
-                    opacity: 0.95
+                    opacity: 0.8
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     cache: false
@@ -278,17 +224,25 @@ PanelWindow {
                 onClicked: list.activateCurrent()
                 onWheel: function(wheel) { list.flick(-wheel.angleDelta.y * 8, 0); wheel.accepted = true }
             }
+            
         }
+        
 
         Keys.onPressed: function(event) {
             if (event.key === Qt.Key_Space) {
                 activateCurrent()
-            } else if (event.key === Qt.Key_W || event.key === Qt.Key_Escape) {
-                Qt.quit()
-            } else {
-                return
-            }
-            event.accepted = true
+                } else if (event.key === Qt.Key_W || event.key === Qt.Key_Escape) {
+                    Qt.quit()    
+                } else if (event.key === Qt.Key_A) {
+                        userMoved = true
+                        moveSelection(-1, 1)
+                } else if (event.key === Qt.Key_D) {
+                            userMoved = true
+                            moveSelection(1, 1)
+                } else {
+                    return
+                }
+                event.accepted = true
         }
     }
 }
