@@ -1,38 +1,35 @@
 <div align="center">
 
-## Hyprland Setup by 43pr メ
+## 43PR — Hyprland
 
-A clean and simple Hyprland setup focused on practical workflows, productivity, and easy to customize.
+Simple Hyprland setup focused on practical keybinds, productivity, and easy to customize.
 
 ![Hyprland](https://img.shields.io/badge/Hyprland-0.56.2-8b9aaf?style=for-the-badge&labelColor=101418)
-![GitHub repo size](https://img.shields.io/github/repo-size/43PR/dotfiles?style=for-the-badge&labelColor=101418&color=8b9aaf)
 [![Discord](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2FHQwU9SzHj%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&style=for-the-badge&logo=discord&logoColor=ffffff&label=discord&labelColor=101418&color=7289a8)](https://discord.gg/HQwU9SzHj)
 [![YouTube](https://img.shields.io/badge/youtube-subscribe-b05a63?style=for-the-badge&logo=youtube&logoColor=ffffff&labelColor=101418)](https://www.youtube.com/@43PR2)
 [![Ko-Fi donate](https://img.shields.io/badge/donate-kofi?style=for-the-badge&logo=ko-fi&logoColor=ffffff&label=ko-fi&labelColor=101418&color=9a6570)](https://ko-fi.com/43pr)
 
-### **[Features](#features)  -  [Keybinds](#most-used-keybinds)  -  [Installation](#installation) -  [Updating](#updating)**
+### **[Features](#features)  -  [Keybinds](#keybinds)  -  [Installation](#installation) -  [Updating](#updating)**
 
 </div>
 
-**v1.2.0**
-
-<img width="1920" height="1080" alt="v1 2 0" src="https://github.com/user-attachments/assets/3b4857bc-285a-473a-924c-be89dab714b9" />
+<img width="1920" height="1080" alt="1792044634" src="https://github.com/user-attachments/assets/3c468b4c-abb2-4484-963f-ad83f3134e19" />
 
 Wallpapers: https://wallhaven.cc/user/43pr
 
 ## Features
 
-- **Top bar** - Volume control, mute, and media playback controls, calendar.
-- **Settings Menu** — System, network, bluetooth, display, audio, storage, themes, and more.
+- **Fast & Lightweight Quickshell** — Optimized desktop components designed to be fast, and easy to customize.
+- **Top bar** - Customizable bar with settings menu, and quick shortcuts.
+- **Settings** — System, network, bluetooth, display, audio, storage, themes, and more.
 - **Wallpaper picker & Dynamic Colors** — Custom wallpaper selector with automatic wallpaper-based color generation.
-- **Preset Themes** — Default Monochrome, Nord, Tokyo Night, etc, and easily create your own. 
-- **App Launcher** — **Rofi** Application search, clipboard history, and opacity control.
+- **Preset Themes** — Monochrome, Nord, Tokyo Night and other popular ones, with support for creating your own.
+- **App Launcher** — **Rofi** App search, clipboard history, and opacity controls.
 - **Zsh + Starship** — Customizable shell with autosuggestions and history.
-- **Customizable Power Menu** —  Custom power menu. 
-- **Notes / To do** —  Custom to-do app. 
+- **Notes & To-do** —  Quick notes, tasks, and reminders.
+- **Power Menu** — Customizable power menu.
 - **Hyprlock** — Custom lock screen.
 - **Spotify + Spicetify** — Custom theme based on **text - darkthemer**, (modified).
-- **Custom Scripts** — Scripts for workflow and system management.
 
 > All programs: [packages.txt](packages.txt)
 
@@ -40,7 +37,7 @@ Wallpapers: https://wallhaven.cc/user/43pr
 
 Just made some tweaks to it. Give it some love: [hyprquickpaper](https://github.com/iamsurjog/hyprquickpaper)
 
-## Most used keybinds
+## Keybinds
 
 > **You can modify keybinds using HyprMod**
 
@@ -55,22 +52,24 @@ Just made some tweaks to it. Give it some love: [hyprquickpaper](https://github.
 | `Super + Shift + 1, 2..`| Move window to workspace  |
 | `Super + E`             | File manager              |
 | `Super + B`             | Browser                   |
-| `Super + W`             | Wallpaper selector        |
-| `Super + I`             | Settings menu             |
-| `Super + Tab`           | Lock screen               |
-| `Super + Grave`         | Logout menu               |
-| `Super + O`             | Switch opacity            |
 | `Super + V`             | Clipboard history         |
-| `Super + Shift + W`     | Toggle waybar             |
+| `Super + S`             | Second launcher           |
+| `Super + I`             | Settings menu             |
+| `Super + W`             | Wallpaper selector        |
+| `Super + O`             | Switch opacity            |
+| `Super + C`             | Notes/To-do               |
+| `Super + Grave`         | Logout menu               |
+| `Super + Tab`           | Lock screen               |
 | `Super + Mouse wheel`   | Zoom in/out               |
-| `Super + C`             | To do / Notes             |
+| `Super + Shift + W`     | Toggle bar                |
 | `Super + N`             | Notifications             |
 | `Delete`                | Screenshot fullscreen     |
 | `SHIFT + Delete`        | Screenshot area select    |
 
 > [!note]
+>
 > **Move and resize windows with Super + left/right mouse drag.**
-> To close most quickshell apps just click outside or Esc key.
+>
 > All keybinds: [.config/hypr/keybinds.lua](.config/hypr/keybinds.lua)
 
 ---
@@ -78,7 +77,7 @@ Just made some tweaks to it. Give it some love: [hyprquickpaper](https://github.
 
 **READ ALL**
 
-Should work for Arch, Manjaro, EndeavourOS, CachyOS, etc. 
+Works for Arch, CachyOS, EndeavourOS, Manjaro, etc. 
 
 This is mainly intended for a clean installation (existing configuration files that are being replaced will be backed up automatically).
 
@@ -97,6 +96,10 @@ chmod +x install.sh
 
 After the installation finishes log out and back in.
 
+Right-click the clock to open Bar Settings. 
+
+Dowload and move wallpapers to Pictures/Wallpapers. Wallpaper picker: Super + W.
+
 > [!important]
 > **Do not move or delete the dotfiles repository after installation.**
 >
@@ -113,9 +116,10 @@ After the installation finishes log out and back in.
 ---
 ## Updating
 
-Pull the latest changes, then run the updater from inside the repository:
+If you didn't move the repository/dotfiles folder then run:
 
 ```bash
+cd dotfiles
 git pull
 ./update.sh
 ```
@@ -140,5 +144,6 @@ You can check the reminders printed at the end of the run.
 > Custom-gpu parts are specific to my hardware.
 >
 > For issues with the wallpaper picker, you can clear the cache from the Storage page in Settings.
+
 
 

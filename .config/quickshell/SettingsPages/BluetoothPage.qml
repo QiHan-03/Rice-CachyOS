@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
-import Quickshell.Io
 import "../"
 
 Item {
@@ -11,80 +10,10 @@ Item {
     readonly property bool powered: adapter ? adapter.enabled : false
     readonly property bool scanning: adapter ? adapter.discovering : false
     property string statusText: ""
-    property int contentMargin: 0
-    property int contentRightMargin: 48
-    property int contentTopMargin: 0
-    property int contentBottomMargin: 0
-
-    // key -> timestamp (ms) the device was hidden after "unpair".
-    // Entries are pruned automatically (see pruneRemovingDevices) so a
-    // device reappears once it's actually gone or after a grace period,
-    // instead of staying hidden forever.
-    property var removingDevices: ({})
-    property int removalHideDurationMs: 10000
-
-    FileView {
-        id: removedDevicesFile
-        path: Quickshell.dataDir + "/removed-bluetooth-devices.json"
-        blockLoading: true
-        onLoaded: page.loadRemovingDevices()
-    }
-
-    function loadRemovingDevices() {
-        var text = removedDevicesFile.text()
-        if (!text) return
-        try {
-            var saved = JSON.parse(text)
-            if (saved && typeof saved === "object")
-                page.removingDevices = saved
-        } catch (error) {
-            console.log("Failed to load removed Bluetooth devices:", error)
-        }
-        // Drop anything stale/no-longer-present left over from a previous session.
-        page.pruneRemovingDevices()
-    }
-
-    function saveRemovingDevices() {
-        removedDevicesFile.setText(JSON.stringify(page.removingDevices))
-    }
-
-    // Clears removingDevices entries once the device is no longer known to
-    // the adapter (forget actually completed) or after removalHideDurationMs
-    // has elapsed, whichever comes first. This is what lets a device that
-    // was unpaired show up again the next time it's discovered by a scan.
-    function pruneRemovingDevices() {
-        var now = Date.now()
-        var present = ({})
-
-        if (page.adapter) {
-            var devs = page.adapter.devices
-            for (var i = 0; i < devs.length; i++) {
-                var d = devs[i]
-                var key = d.address || d.name || ""
-                if (key) present[key] = true
-            }
-        }
-
-        var updated = {}
-        var changed = false
-
-        for (var k in page.removingDevices) {
-            var ts = page.removingDevices[k]
-            var stillPresent = !!present[k]
-            var expired = (now - ts) > page.removalHideDurationMs
-
-            if (stillPresent && !expired) {
-                updated[k] = ts
-            } else {
-                changed = true
-            }
-        }
-
-        if (changed) {
-            page.removingDevices = updated
-            page.saveRemovingDevices()
-        }
-    }
+    property real marginLeft: 0
+    property real marginRight: 55
+    property real marginTop: 0
+    property real marginBottom: 0
 
     function setStatus(text) {
         page.statusText = text
@@ -107,11 +36,29 @@ Item {
         if (!page.adapter)
             return
 
-        var on = !page.adapter.enabled
-        if (!on)
+        if (page.adapter.enabled) {
+            BluetoothState.reconnectPaused = true
             setDiscovering(false)
 
-        page.adapter.enabled = on
+            var devs = BluetoothState.deviceList()
+            for (var i = 0; i < devs.length; i++) {
+                var s = devs[i].state
+                if (s === BluetoothDeviceState.Connected || s === BluetoothDeviceState.Connecting)
+                    devs[i].disconnect()
+            }
+
+            powerOffTimer.restart()
+            return
+        }
+
+        BluetoothState.reconnectPaused = false
+        page.adapter.enabled = true
+    }
+
+    Timer {
+        id: powerOffTimer
+        interval: 800
+        onTriggered: if (page.adapter) page.adapter.enabled = false
     }
 
     function deviceAction(dev) {
@@ -121,6 +68,7 @@ Item {
 
         if (dev.state === BluetoothDeviceState.Connected) {
             setStatus("Disconnecting " + name + "...")
+            BluetoothState.forget(dev.address)
             dev.disconnect()
             return
         }
@@ -144,13 +92,7 @@ Item {
     function removeDevice(dev) {
         if (!dev) return
 
-        var name = dev.name || dev.address || "device"
-        var key = dev.address || name
-        var updated = Object.assign({}, page.removingDevices)
-
-        updated[key] = Date.now()
-        page.removingDevices = updated
-        saveRemovingDevices()
+        BluetoothState.markRemoved(dev)
 
         if (dev.state === BluetoothDeviceState.Connected ||
             dev.state === BluetoothDeviceState.Connecting ||
@@ -182,73 +124,36 @@ Item {
     Component.onCompleted: if (page.visible && page.powered) setDiscovering(true)
     Component.onDestruction: setDiscovering(false)
 
-    // Reacts directly to adapter signals rather than only to the derived
-    // "powered" property, and prunes the unpair-hide list whenever the
-    // device list changes (e.g. once a forgotten device is actually gone).
     Connections {
         target: page.adapter
         function onEnabledChanged() {
             page.setDiscovering(page.visible && page.powered)
         }
-        function onDevicesChanged() {
-            page.pruneRemovingDevices()
-        }
     }
 
-    // Safety net: if the very first StartDiscovery call was sent before
-    // BlueZ finished powering the adapter on, "discovering" can silently
-    // stay false. Keep nudging it back on until it actually takes, instead
-    // of requiring the user to leave and reopen the page.
     Timer {
         id: discoveryRetryTimer
         interval: 1500
         repeat: true
-        running: page.visible && page.powered
+        running: page.visible && page.powered && !powerOffTimer.running
         onTriggered: {
             if (page.adapter && page.powered && !page.adapter.discovering)
                 page.adapter.discovering = true
         }
     }
 
-    // Periodic safety net for the unpair-hide list, independent of
-    // devicesChanged firing (covers adapters/backends that don't emit it
-    // promptly after forget()).
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: page.pruneRemovingDevices()
-    }
-
     Column {
         anchors.fill: parent
-        anchors.leftMargin: page.contentMargin
-        anchors.rightMargin: page.contentRightMargin
-        anchors.topMargin: page.contentTopMargin
-        anchors.bottomMargin: page.contentBottomMargin
-        spacing: 9
+        anchors.leftMargin: page.marginLeft; anchors.rightMargin: page.marginRight
+        anchors.topMargin: page.marginTop; anchors.bottomMargin: page.marginBottom
+        spacing: 14
 
-        Item {
-            id: header
-            width: parent.width
-            height: 36
-
-            Text {
-                text: "BLUETOOTH"
-                color: Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: 18
-                font.letterSpacing: 3
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenterOffset: -6
-            }
+        Text {
+            text: "BLUETOOTH"; color: Theme.text
+            font.family: Theme.fontFamily; font.pixelSize: 19; font.letterSpacing: 3
         }
 
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: Theme.border
-        }
+        Rectangle { width: parent.width; height: 1; color: Theme.border }
 
         Rectangle {
             id: bluetoothToggle
@@ -257,14 +162,14 @@ Item {
             radius: Theme.radius
             color: page.powered
                 ? Theme.alpha(Theme.accent, 0.1)
-                : Theme.alpha("#A0A0A0", 0.15)
+                : Theme.alpha(Theme.textFaint, 0.15)
             border.width: 1
-            border.color: page.powered ? Theme.accent : "#A0A0A0"
+            border.color: page.powered ? Theme.accent : Theme.textFaint
 
             Text {
                 anchors.centerIn: parent
                 text: page.powered ? "BLUETOOTH ON" : "BLUETOOTH OFF"
-                color: page.powered ? Theme.accent : "#A0A0A0"
+                color: page.powered ? Theme.accent : Theme.textFaint
                 font.family: Theme.fontFamily
                 font.pixelSize: 10
                 font.bold: true
@@ -291,7 +196,7 @@ Item {
         Flickable {
             id: flick
             width: parent.width
-            height: parent.height - header.height - 1 - bluetoothToggle.height - 3 * 9
+            height: parent.height - y
             clip: true
             contentWidth: width
             contentHeight: list.height
@@ -383,9 +288,6 @@ Item {
 
                 Repeater {
                     id: repeater
-                    // Only bind to the device list while the adapter is powered on;
-                    // otherwise the model is null so no device cards render,
-                    // even for devices that remain paired/known while BT is off.
                     model: (page.adapter && page.powered) ? page.adapter.devices : null
 
                     delegate: Rectangle {
@@ -399,14 +301,14 @@ Item {
                         readonly property string deviceKey:
                             modelData.address || modelData.name || ""
 
-                        visible: !page.removingDevices[deviceKey]
+                        visible: !BluetoothState.removingDevices[deviceKey]
                         width: list.width
                         height: visible ? 52 : 0
                         radius: Theme.radius
 
                         color: isConnected
                             ? Theme.alpha(Theme.accent, 0.10)
-                            : Theme.alpha(Theme.text, 0.025)
+                            : "transparent"
 
                         border.width: 1
                         border.color: isConnected

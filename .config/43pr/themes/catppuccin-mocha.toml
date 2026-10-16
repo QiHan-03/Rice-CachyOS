@@ -1,4 +1,5 @@
 name = "catppuccin-mocha"
+appearance = "dark"
 description = "Catppuccin Mocha theme"
 override = false   # true = wallpaper changes will NOT replace this preset
 
@@ -45,13 +46,6 @@ term12 = "#89b4fa"
 term13 = "#f5c2e7"
 term14 = "#94e2d5"
 term15 = "#cdd6f4"
-
-wb_panel_bg    = "#181825"
-wb_text        = "#cdd6f4"
-wb_critical    = "#f38ba8"
-wb_ws_idle     = "#585b70"
-wb_ws_active   = "#89b4fa"
-wb_ws_urgent   = "#eba0ac"
 
 lock_outline  = "#89b4fa"
 lock_check    = "#a6e3a1"

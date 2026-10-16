@@ -1,4 +1,5 @@
 name = "43pr-default"
+appearance = "dark"
 description = "The original 43PR look, extracted from the repo"
 override = false   # true = wallpaper changes will NOT replace this preset
 
@@ -44,13 +45,6 @@ term12 = "#1a8fff"
 term13 = "#fd28ff"
 term14 = "#14ffff"
 term15 = "#ffffff"
-
-wb_panel_bg    = "#141414"
-wb_text        = "#ffffff"
-wb_critical    = "#ff5555"
-wb_ws_idle     = "#ffffff"
-wb_ws_active   = "#ffffff"
-wb_ws_urgent   = "#ff4646"
 
 lock_outline  = "#ffffff"
 lock_check    = "#ffffff"

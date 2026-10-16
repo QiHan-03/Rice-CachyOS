@@ -1,6 +1,6 @@
--- ~/.config/hypr/rules.lua
--- Migrated from rules.conf
 -- Docs: https://wiki.hypr.land/Configuring/Basics/Window-Rules/
+-- To check class name, open the app and run:
+-- hyprctl clients
 
 hl.layer_rule({
     match = { namespace = "rofi" },

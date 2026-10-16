@@ -45,6 +45,7 @@ networkmanager
 network-manager-applet
 bluez
 bluez-utils
+blueman                  # blueman-manager
 
 # --------------------------------------------------
 # Audio
@@ -54,6 +55,8 @@ pipewire
 pipewire-audio
 pipewire-pulse
 wireplumber
+pavucontrol
+playerctl
 
 # --------------------------------------------------
 # Clipboard
@@ -85,6 +88,7 @@ tumbler
 ffmpegthumbnailer
 xed
 ncdu
+zenity
 
 # --------------------------------------------------
 # GTK / Theming / Icons / Appearance
@@ -97,6 +101,7 @@ dconf
 gsettings-desktop-schemas
 adw-gtk-theme
 papirus-icon-theme
+gnome-themes-extra
 papirus-folders
 nwg-look
 
@@ -116,6 +121,7 @@ dmidecode
 brightnessctl
 gammastep
 power-profiles-daemon
+lm_sensors
 
 # --------------------------------------------------
 # Desktop Notifications
@@ -138,7 +144,7 @@ cmatrix
 ttf-jetbrains-mono-nerd
 ttf-iosevka-nerd
 ttf-roboto-mono
-ttf-font-awesome
+otf-font-awesome
 
 # --------------------------------------------------
 # Scripting / Package / Application Utilities

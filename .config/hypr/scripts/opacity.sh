@@ -14,6 +14,11 @@ case "$choice" in
     *) exit 0 ;;
 esac
 
-sed -i "0,/opacity = \".* override\"/s//opacity = \"$opacity override\"/" ~/.config/hypr/rules.lua
+sed -i --follow-symlinks "0,/opacity = \".* override\"/s//opacity = \"$opacity override\"/" ~/.config/hypr/rules.lua
+sed -i -E "s/(property real bgAlpha: )[0-9.]+/\1$opacity/" ~/.config/quickshell/Theme.qml
 
 hyprctl reload
+
+pkill qs
+sleep 0.2
+qs &

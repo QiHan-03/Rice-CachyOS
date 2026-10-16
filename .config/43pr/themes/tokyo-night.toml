@@ -1,4 +1,5 @@
 name = "tokyo-night"
+appearance = "dark"
 description = "Dark Tokyo Night theme"
 override = false   # true = wallpaper changes will NOT replace this preset
 
@@ -45,13 +46,6 @@ term12 = "#7aa2f7"
 term13 = "#bb9af7"
 term14 = "#7dcfff"
 term15 = "#c0caf5"
-
-wb_panel_bg    = "#1a1b26"
-wb_text        = "#c0caf5"
-wb_critical    = "#f7768e"
-wb_ws_idle     = "#565f89"
-wb_ws_active   = "#7aa2f7"
-wb_ws_urgent   = "#ff7a93"
 
 lock_outline  = "#7aa2f7"
 lock_check    = "#9ece6a"
