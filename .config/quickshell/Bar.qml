@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
+import Quickshell.Services.SystemTray
 
 Scope {
     id: root
@@ -17,7 +18,7 @@ Scope {
         scale: 1.0, bgOpacity: 0.5, border: false, radius: Theme.radius, calRadius: 15,
         statsMode: "compact", tooltips: true, tooltipHints: true,
         hidden: "stats,wall,settings",
-        startMods: "stats,ws",
+        startMods: "stats,tray,ws",
         centerMods: "clock",
         endMods: "media,volume,battery,net,notif,wall,settings,power"
     })
@@ -124,6 +125,7 @@ Scope {
     // Modules without it have a dedicated Component below (see `comps`).
     readonly property var moduleDefs: [
         { id: "stats",    l: "System Stats" },
+        { id: "tray",     l: "System Tray" },
         { id: "ws",       l: "Workspaces" },
         { id: "media",    l: "Media" },
         { id: "volume",   l: "Volume" },
@@ -142,7 +144,7 @@ Scope {
     readonly property var moduleIds: moduleDefs.map(d => d.id)
     readonly property var defMap: moduleDefs.reduce((m, d) => { m[d.id] = d; return m; }, {})
     readonly property var comps: ({
-        stats: statsC, ws: wsC, media: mediaC, volume: volumeC, battery: batteryC, icon: iconC
+        stats: statsC, tray: trayC, ws: wsC, media: mediaC, volume: volumeC, battery: batteryC, icon: iconC
     })
 
     function csv(str) { return str === "" ? [] : str.split(","); }
@@ -854,7 +856,7 @@ Scope {
     }
 
     // CPU / RAM — "default": `CPU 12%`   "compact": small icon + `12%`
-    // GPU / CPU temp
+    // Han: also GPU / CPU temp
     Component {
         id: statsC
         Lane {
@@ -910,6 +912,97 @@ Scope {
                         modelData === "GPU"
                             ? "GPU usage: " + displayVal :
                         "CPU temperature: " + displayVal
+                }
+            }
+        }
+    }
+
+    // Han:
+    // ───────────────────────── System Tray ─────────────────────────
+    Component {
+        id: trayC
+
+        Item {
+            implicitWidth: trayLane.implicitWidth + root.s(14)
+            implicitHeight: trayLane.implicitHeight
+
+            Lane {
+                id: trayLane
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                gap: 4
+
+                Repeater {
+                    model: SystemTray.items
+
+                    delegate: Item {
+                        id: trayItem
+
+                        required property var modelData
+
+                        readonly property var tray: modelData
+
+                        implicitWidth: root.s(22)
+                        implicitHeight: root.s(22)
+
+                        Layout.alignment: Qt.AlignCenter
+
+                        Image {
+                            id: trayIcon
+
+                            anchors.centerIn: parent
+                            width: root.s(16)
+                            height: root.s(16)
+
+                            source: trayItem.tray.icon
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                        }
+
+                        QsMenuAnchor {
+                            id: trayMenu
+                            menu: trayItem.tray.menu
+                            
+                            anchor.item: trayItem
+                            anchor.edges: Edges.Bottom
+                            anchor.gravity: Edges.Bottom
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+
+                            acceptedButtons:
+                                Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+
+                            hoverEnabled: true
+
+                            onClicked: mouse => {
+                                const item = trayItem.tray;
+
+                                console.log(
+                                    "Tray clicked:",
+                                    item.title,
+                                    "button:", mouse.button,
+                                    "hasMenu:", item.hasMenu
+                                );
+
+                                if (mouse.button === Qt.RightButton) {
+                                    if (item.hasMenu)
+                                        trayMenu.open();
+
+                                } else if (mouse.button === Qt.MiddleButton) {
+                                    item.secondaryActivate();
+
+                                } else if (item.onlyMenu) {
+                                    if (item.hasMenu)
+                                        trayMenu.open();
+
+                                } else {
+                                    item.activate();
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
