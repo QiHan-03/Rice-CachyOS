@@ -962,7 +962,7 @@ Scope {
                         QsMenuAnchor {
                             id: trayMenu
                             menu: trayItem.tray.menu
-                            
+
                             anchor.item: trayItem
                             anchor.edges: Edges.Bottom
                             anchor.gravity: Edges.Bottom
@@ -1421,7 +1421,7 @@ Scope {
                         Mod {
                             bold: true
                             baseSize: root.sz.clock
-                            text: Qt.formatDateTime(clk.date, "HH:mm")
+                            text: Qt.formatDateTime(clk.date, "h:mm ap")
                             vtext: Qt.formatDateTime(clk.date, "HH") + "\n" + Qt.formatDateTime(clk.date, "mm")
                             active: clockPanel.calOpen
                             tip: Qt.formatDate(clk.date, "dddd, d MMMM yyyy")
