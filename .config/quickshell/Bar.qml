@@ -123,7 +123,7 @@ Scope {
     //   g = glyph, tip = tooltip title, hint = left-click description.
     // Modules without it have a dedicated Component below (see `comps`).
     readonly property var moduleDefs: [
-        { id: "stats",    l: "CPU / RAM" },
+        { id: "stats",    l: "System Stats" },
         { id: "ws",       l: "Workspaces" },
         { id: "media",    l: "Media" },
         { id: "volume",   l: "Volume" },
@@ -239,6 +239,8 @@ Scope {
     property int memPercent: 0
     property real memUsedG: 0
     property real memTotalG: 0
+    property int gpuUsage: 0
+    property int cpuTemp: 0
     property string netState: "disconnected"
     property real _prevTotal: 0
     property real _prevIdle: 0
@@ -307,9 +309,51 @@ Scope {
         }
     }
 
+    Process {
+        id: gpuProc
+
+        command: [
+            "nvidia-smi",
+            "--query-gpu=utilization.gpu",
+            "--format=csv,noheader,nounits"
+        ]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const v = parseInt(text.trim());
+                root.gpuUsage = Number.isNaN(v) ? -1 : v;
+            }
+        }
+    }
+
+    Process {
+        id: tempProc
+
+        command: [
+            "sh", "-c",
+            "for d in /sys/class/hwmon/hwmon*; do " +
+            "[ \"$(cat \"$d/name\" 2>/dev/null)\" = coretemp ] || continue; " +
+            "for f in \"$d\"/temp*_label; do " +
+            "[ -f \"$f\" ] || continue; " +
+            "if grep -q '^Package id 0$' \"$f\"; then " +
+            "cat \"${f%_label}_input\"; exit; " +
+            "fi; " +
+            "done; " +
+            "done"
+        ]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const v = parseInt(text.trim());
+                root.cpuTemp = Number.isNaN(v)
+                    ? -1 : Math.round(v / 1000);
+            }
+        }
+    }
+
     Timer {
         interval: 2000; running: root.barVisible; repeat: true; triggeredOnStart: true
-        onTriggered: { statFile.reload(); memFile.reload(); }
+        onTriggered: { statFile.reload(); memFile.reload(); if (!gpuProc.running) gpuProc.running = true; if (!tempProc.running) tempProc.running = true; }
     }
     Timer {
         interval: 10000; running: root.barVisible; repeat: true; triggeredOnStart: true
@@ -580,7 +624,7 @@ Scope {
         readonly property Item lane: laneItem
 
         visible: (root.vertical ? laneItem.implicitHeight : laneItem.implicitWidth) > 0
-        width: root.vertical ? root.panelThick : laneItem.implicitWidth + 4
+        width: root.vertical ? root.panelThick : laneItem.implicitWidth + 14
         height: root.vertical ? laneItem.implicitHeight + 4 : root.panelThick
         radius: root.barRadius
         color: root.joined ? "transparent" : root.bgColor
@@ -810,29 +854,62 @@ Scope {
     }
 
     // CPU / RAM — "default": `CPU 12%`   "compact": small icon + `12%`
+    // GPU / CPU temp
     Component {
         id: statsC
         Lane {
             Repeater {
-                model: ["CPU", "RAM"]
+                model: ["CPU", "RAM", "GPU", "TEMP"]
                 delegate: Mod {
                     required property string modelData
-                    readonly property bool isCpu: modelData === "CPU"
+
                     readonly property bool compact: cfg.statsMode === "compact"
-                    readonly property int val: isCpu ? root.cpuUsage : root.memPercent
+                    
+                    readonly property int val:
+                        modelData === "CPU" ? root.cpuUsage :
+                        modelData === "RAM" ? root.memPercent :
+                        modelData === "GPU" ? root.gpuUsage :
+                        root.cpuTemp
+
+                    readonly property string unit:
+                        modelData === "TEMP" ? "°C" : "%"
+
+                    readonly property string displayVal:
+                        val < 0 ? "N/A" : val + unit
 
                     baseSize: root.sz.stat
                     glyphSize: root.sz.stat + 2
-                    glyph: compact ? (isCpu ? "\uDB81\uDE1A" : "\uDB80\uDF5B") : ""
-                    text: compact ? val + "%" : modelData + " " + val + "%"
+
+                    glyph: compact ? (
+                        modelData === "CPU" ? "\uDB81\uDE1A" :
+                        modelData === "RAM" ? "\uDB80\uDF5B" :
+                        modelData === "GPU" ? "\uf109" :
+                        ""
+                        // "\uf2c9"
+                    ) : ""
+
+                    text: compact ? displayVal : (modelData === "TEMP" ? displayVal : modelData + " " + displayVal)
+
                     spacing: compact ? 4 : root.sizeIconGap
                     padX: compact ? 12 : 20
 
                     interactive: false
-                    warning: val >= 85
-                    tip: isCpu ? "CPU usage: " + val + "%"
-                               : "Memory: " + root.memUsedG.toFixed(1) + " / " + root.memTotalG.toFixed(1)
-                                 + " GiB (" + val + "%)"
+
+                    warning: val >= (
+                        modelData === "" ? 90 : 85
+                    )
+
+                    tip:
+                        modelData === "CPU"
+                            ? "CPU usage: " + displayVal :
+                        modelData === "RAM"
+                            ? "Memory: " +
+                            root.memUsedG.toFixed(1) + " / " +
+                            root.memTotalG.toFixed(1) + " GiB (" +
+                            displayVal + ")" :
+                        modelData === "GPU"
+                            ? "GPU usage: " + displayVal :
+                        "CPU temperature: " + displayVal
                 }
             }
         }
@@ -1052,7 +1129,7 @@ Scope {
 
                         SetRow { label: "Position"; Seg { options: root.positions; current: cfg.position; onPicked: v => cfg.position = v } }
                         SetRow { label: "Style"; Seg { options: root.styles; current: cfg.style; onPicked: v => cfg.style = v } }
-                        SetRow { label: "CPU / RAM"; Seg { options: root.statsModes; current: cfg.statsMode; onPicked: v => cfg.statsMode = v } }
+                        SetRow { label: "System Stats"; Seg { options: root.statsModes; current: cfg.statsMode; onPicked: v => cfg.statsMode = v } }
                         SetRow {
                             label: "Opacity  " + Math.round(cfg.bgOpacity * 100) + "%"
                             Slide { from: 0; to: 1; step: 0.05; value: cfg.bgOpacity; onMoved: v => cfg.bgOpacity = v }
