@@ -26,7 +26,7 @@ Wallpapers: https://wallhaven.cc/user/43pr
 - **Preset Themes** — Monochrome, Nord, Tokyo Night and other popular ones, with support for creating your own.
 - **App Launcher** — **Rofi** App search, clipboard history, and opacity controls.
 - **Zsh + Starship** — Customizable shell with autosuggestions and history.
-- **Notes & To-do** —  Quick notes, tasks, and reminders.
+- **Notes & Reminders** —  Quick notes, tasks, and reminders.
 - **Power Menu** — Customizable power menu.
 - **Hyprlock** — Custom lock screen.
 - **Spotify + Spicetify** — Custom theme based on **text - darkthemer**, (modified).
@@ -39,7 +39,7 @@ Just made some tweaks to it. Give it some love: [hyprquickpaper](https://github.
 
 ## Keybinds
 
-> **You can modify keybinds using HyprMod**
+> **Right-click clock to open bar settings, hover to see actions**
 
 | Keybind                 | Action                    |
 | -----------             | ------------------------- |
@@ -53,22 +53,25 @@ Just made some tweaks to it. Give it some love: [hyprquickpaper](https://github.
 | `Super + E`             | File manager              |
 | `Super + B`             | Browser                   |
 | `Super + V`             | Clipboard history         |
-| `Super + S`             | Second launcher           |
 | `Super + I`             | Settings menu             |
 | `Super + W`             | Wallpaper selector        |
 | `Super + O`             | Switch opacity            |
-| `Super + C`             | Notes/To-do               |
-| `Super + Grave`         | Logout menu               |
-| `Super + Tab`           | Lock screen               |
+| `Super + C`             | Notes & Reminders         |
+| `Super + Shift + C`     | Color picker tool         |
 | `Super + Mouse wheel`   | Zoom in/out               |
 | `Super + Shift + W`     | Toggle bar                |
+| `Super + Grave`         | Logout menu               |
+| `Super + Tab`           | Lock screen               |
 | `Super + N`             | Notifications             |
+| `Super + S`             | Second launcher           |
 | `Delete`                | Screenshot fullscreen     |
 | `SHIFT + Delete`        | Screenshot area select    |
 
 > [!note]
 >
 > **Move and resize windows with Super + left/right mouse drag.**
+>
+> **You can modify keybinds using HyprMod**
 >
 > All keybinds: [.config/hypr/keybinds.lua](.config/hypr/keybinds.lua)
 

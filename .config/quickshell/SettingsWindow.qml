@@ -10,7 +10,7 @@ Scope {
 
     // ---- resize limits (tweak these) -------------------------------------
     property real minCardWidth: 780
-    property real minCardHeight: 280
+    property real minCardHeight: 255
     property real maxCardWidth: 1600
     property real maxCardHeight: 1100
     property real resizeGripSize: 40     // hit area of each corner grip (px)
@@ -56,9 +56,9 @@ Scope {
 
     property var navItems: [
         { name: "System", icon: "󰒓", page: "SystemPage" },
-        { name: "Audio",     icon: "󰕾", page: "AudioPage" },     
-        { name: "Display",   icon: "󰍹", page: "DisplayPage" },  
-        { name: "Network",   icon: "󰖩", page: "NetworkPage" },    
+        { name: "Audio", icon: "󰕾", page: "AudioPage" },     
+        { name: "Display", icon: "󰍹", page: "DisplayPage" },  
+        { name: "Network", icon: "󰖩", page: "NetworkPage" },    
         { name: "Bluetooth", icon: "󰂯", page: "BluetoothPage" },
         { name: "Storage", icon: "󰋊", page: "StoragePage" },
         { name: "Power", icon: "󰐥", page: "PowerPage" },

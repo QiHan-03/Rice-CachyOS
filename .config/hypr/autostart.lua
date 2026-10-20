@@ -3,7 +3,7 @@
 hl.on("hyprland.start", function()
 
     -- Allow older apps to display tray icons
-    hl.exec_cmd("xembedsniproxy")
+    hl.exec_cmd("sleep 3 && xembedsniproxy")
 
     -- Essentials
     -- hl.exec_cmd("waybar")
