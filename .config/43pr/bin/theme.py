@@ -23,8 +23,8 @@ STATE = STATE_DIR / "state.json"
 #             a variant set via gtk-application-prefer-dark-theme in settings.ini).
 #   None   -> leave gtk-theme untouched.
 # Or put your own theme names here.
-GTK_THEME_DARK = "Breeze-Dark"
-GTK_THEME_LIGHT = "Breeze"
+GTK_THEME_DARK = None
+GTK_THEME_LIGHT = None
 
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 NAME = re.compile(r"^[A-Za-z0-9._-]+$")

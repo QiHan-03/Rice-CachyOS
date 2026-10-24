@@ -10,6 +10,12 @@ mainMod    = "SUPER"
 local home = os.getenv("HOME")
 local menu = "rofi -show drun"
 
+---- DISCORD KEYBINDS ----
+hl.bind("Delete", hl.dsp.global("discord:discord-toggle-mute"))
+hl.bind("ALT + M", hl.dsp.global("discord:discord-toggle-mute"))
+hl.bind("ALT + N", hl.dsp.global("discord:discord-toggle-deafen"))
+
+
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal)) -- Terminal (
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("pgrep -x rofi >/dev/null && pkill -x rofi || " .. menu))    -- App launcher
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))                                                -- File manager

@@ -13,7 +13,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
     hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
 
-    hl.exec_cmd("sleep 3 && easyeffects --gapplication-service")
+    hl.exec_cmd("sleep 3 && easyeffects --service-mode --hide-window")
 
     -- Daemons
     hl.exec_cmd("awww-daemon")
@@ -22,7 +22,7 @@ hl.on("hyprland.start", function()
     
     -- Regular apps
     hl.exec_cmd("brave")
-    hl.exec_cmd("discord --ozone-platform=x11")
+    hl.exec_cmd("discord")
     hl.exec_cmd("steam -silent")
     
     -- Hypyidle
