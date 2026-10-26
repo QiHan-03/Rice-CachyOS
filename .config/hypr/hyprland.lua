@@ -19,7 +19,8 @@ hl.env("MOZ_ENABLE_WAYLAND", "1")
 hl.config({
     input = {
         kb_layout = "us",
-        follow_mouse = 0,
+        follow_mouse = 2,
+        float_switch_override_focus = 0,
         sensitivity = 0.3,
         accel_profile = "flat",
         touchpad = {

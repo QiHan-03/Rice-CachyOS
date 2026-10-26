@@ -21,7 +21,7 @@ hl.monitor({
 hl.monitor({
     output = "eDP-1",
     mode = "2560x1440@165",
-    position = "auto-right",
+    position = "auto-left",
     scale = 1.25,
     -- disabled = true  --for when editing config, saving files reloads hyprctl
 })
